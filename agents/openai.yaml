@@ -1,0 +1,4 @@
+interface:
+  display_name: "Multi-Agent Orchestrator"
+  short_description: "Coordinate logical agents inside one AI tool"
+  default_prompt: "Use $multi-agent-orchestrator to break this long task into logical agents with checkpoints and verification."

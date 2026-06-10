@@ -1,0 +1,18 @@
+﻿{
+  "generated_at": "YYYY-MM-DDTHH:MM:SS+08:00",
+  "refresh_interval_seconds": 180,
+  "read_only": true,
+  "summary": {
+    "total_tasks": 0,
+    "running": 0,
+    "partially_completed": 0,
+    "blocked": 0,
+    "done": 0,
+    "open_risks": 0
+  },
+  "agents": [],
+  "tasks": [],
+  "recent_events": [],
+  "risks": [],
+  "checkpoints": []
+}

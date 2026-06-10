@@ -1,0 +1,15 @@
+{
+  "event_id": "evt_YYYYMMDD_0001",
+  "time": "YYYY-MM-DD HH:MM:SS",
+  "task_id": "task_YYYYMMDD_001",
+  "agent": "Coordinator",
+  "event": "task.created",
+  "from_status": null,
+  "to_status": "draft",
+  "caused_by": "user_request",
+  "trigger_event_id": null,
+  "blocked_by": null,
+  "conflicting_resource": null,
+  "summary": "",
+  "next": "Coordinator"
+}
