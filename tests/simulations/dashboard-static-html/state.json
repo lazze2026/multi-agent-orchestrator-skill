@@ -30,7 +30,37 @@
                     "needs_dispatch":  5,
                     "open_risks":  8,
                     "active_agents":  9,
-                    "stale_agents":  2
+                    "stale_agents":  2,
+                    "metrics":  [
+                                    {
+                                        "id":  "task_completion",
+                                        "label":  "任务完成率",
+                                        "value":  "3/16",
+                                        "note":  "已完成任务 / 总任务",
+                                        "status":  "running"
+                                    },
+                                    {
+                                        "id":  "active_agents",
+                                        "label":  "活跃 Agent",
+                                        "value":  "9",
+                                        "note":  "含运行、验证、监控角色",
+                                        "status":  "active"
+                                    },
+                                    {
+                                        "id":  "blockers",
+                                        "label":  "当前卡点",
+                                        "value":  "4",
+                                        "note":  "含授权、锁冲突、验证失败",
+                                        "status":  "blocked"
+                                    },
+                                    {
+                                        "id":  "dispatch",
+                                        "label":  "待调度事项",
+                                        "value":  "5",
+                                        "note":  "需要 Coordinator 或用户处理",
+                                        "status":  "warning"
+                                    }
+                                ]
                 },
     "task_groups":  [
                         {
@@ -219,7 +249,10 @@
                        "progress":  "协调 13/16 个任务",
                        "blocked_by":  "无",
                        "next_action":  "等待 Worker-2 与 Worker-4 的结果，随后触发验证和锁释放决策。",
-                       "last_seen":  "2026-06-10T18:11:51+08:00"
+                       "last_seen":  "2026-06-10T18:11:51+08:00",
+                       "current_work":  "统筹导出、验证、锁释放和取消级联分析。",
+                       "detail":  "等待 Worker-2 与 Worker-4 的结果，随后触发验证和锁释放决策。",
+                       "last_observed":  "2026-06-10T18:11:51+08:00"
                    },
                    {
                        "agent_id":  "Planner-A",
@@ -231,7 +264,10 @@
                        "progress":  "6/6 个任务卡已批准",
                        "blocked_by":  "无",
                        "next_action":  "已交回 Coordinator。",
-                       "last_seen":  "2026-06-10T17:02:40+08:00"
+                       "last_seen":  "2026-06-10T17:02:40+08:00",
+                       "current_work":  "完成任务拆解、依赖、授权和验收条件声明。",
+                       "detail":  "已交回 Coordinator。",
+                       "last_observed":  "2026-06-10T17:02:40+08:00"
                    },
                    {
                        "agent_id":  "Worker-1",
@@ -243,7 +279,10 @@
                        "progress":  "2000/5000 (40%)",
                        "blocked_by":  "API 限流窗口",
                        "next_action":  "由 Verifier 确认输出可复用，再由 Worker-2 续传。",
-                       "last_seen":  "2026-06-10T17:11:00+08:00"
+                       "last_seen":  "2026-06-10T17:11:00+08:00",
+                       "current_work":  "已产出可复用 batch_001.json，因 API 限流暂停。",
+                       "detail":  "由 Verifier 确认输出可复用，再由 Worker-2 续传。",
+                       "last_observed":  "2026-06-10T17:11:00+08:00"
                    },
                    {
                        "agent_id":  "Worker-2",
@@ -255,7 +294,10 @@
                        "progress":  "1480/3000 (49%)",
                        "blocked_by":  "未阻塞，但受 API 窗口约束",
                        "next_action":  "继续导出并准备交给 Verifier-1 做 100% 校验。",
-                       "last_seen":  "2026-06-10T18:11:20+08:00"
+                       "last_seen":  "2026-06-10T18:11:20+08:00",
+                       "current_work":  "从 checkpoint 恢复后继续导出剩余客户记录。",
+                       "detail":  "继续导出并准备交给 Verifier-1 做 100% 校验。",
+                       "last_observed":  "2026-06-10T18:11:20+08:00"
                    },
                    {
                        "agent_id":  "Worker-3",
@@ -267,7 +309,10 @@
                        "progress":  "0/1 (0%)",
                        "blocked_by":  "Worker-4 持有 backend/config.py 写锁",
                        "next_action":  "等待锁释放，或由 Coordinator 决定是否调整优先级。",
-                       "last_seen":  "2026-06-10T17:29:20+08:00"
+                       "last_seen":  "2026-06-10T17:29:20+08:00",
+                       "current_work":  "需要修改配置导出路径，但目标文件被其他任务持有写锁。",
+                       "detail":  "等待锁释放，或由 Coordinator 决定是否调整优先级。",
+                       "last_observed":  "2026-06-10T17:29:20+08:00"
                    },
                    {
                        "agent_id":  "Worker-4",
@@ -279,7 +324,10 @@
                        "progress":  "770/1200 (64%)",
                        "blocked_by":  "无",
                        "next_action":  "尽快完成并释放写锁，解除 Worker-3 卡点。",
-                       "last_seen":  "2026-06-10T18:10:30+08:00"
+                       "last_seen":  "2026-06-10T18:10:30+08:00",
+                       "current_work":  "正在写入配置行，因此持有 backend/config.py 写锁。",
+                       "detail":  "尽快完成并释放写锁，解除 Worker-3 卡点。",
+                       "last_observed":  "2026-06-10T18:10:30+08:00"
                    },
                    {
                        "agent_id":  "Worker-5",
@@ -291,7 +339,10 @@
                        "progress":  "35/41 (85%)",
                        "blocked_by":  "6 条记录需要人工处置策略",
                        "next_action":  "等待 Verifier-2 和用户决策。",
-                       "last_seen":  "2026-06-10T17:22:05+08:00"
+                       "last_seen":  "2026-06-10T17:22:05+08:00",
+                       "current_work":  "已清洗大多数异常记录，剩余 6 条进入 rejects.json。",
+                       "detail":  "等待 Verifier-2 和用户决策。",
+                       "last_observed":  "2026-06-10T17:22:05+08:00"
                    },
                    {
                        "agent_id":  "Worker-6",
@@ -303,7 +354,10 @@
                        "progress":  "0/3 (0%)",
                        "blocked_by":  "依赖任务未完成",
                        "next_action":  "等待 task_20260610_006 到 done 或获得人工处置。",
-                       "last_seen":  "2026-06-10T17:33:00+08:00"
+                       "last_seen":  "2026-06-10T17:33:00+08:00",
+                       "current_work":  "依赖 task_20260610_006 的处置结果。",
+                       "detail":  "等待 task_20260610_006 到 done 或获得人工处置。",
+                       "last_observed":  "2026-06-10T17:33:00+08:00"
                    },
                    {
                        "agent_id":  "Verifier-1",
@@ -315,7 +369,10 @@
                        "progress":  "高风险 100% 校验排队中",
                        "blocked_by":  "等待 Worker-2 交付完整输出",
                        "next_action":  "准备校验记录连续性、数量和最后 ID。",
-                       "last_seen":  "2026-06-10T18:11:35+08:00"
+                       "last_seen":  "2026-06-10T18:11:35+08:00",
+                       "current_work":  "高风险任务需要 100% 校验后才能合并。",
+                       "detail":  "准备校验记录连续性、数量和最后 ID。",
+                       "last_observed":  "2026-06-10T18:11:35+08:00"
                    },
                    {
                        "agent_id":  "Verifier-2",
@@ -327,7 +384,10 @@
                        "progress":  "6/41 条被拒绝",
                        "blocked_by":  "需要人工决定失败记录处理方式",
                        "next_action":  "提交 retry/drop/manual-fix 三选一建议。",
-                       "last_seen":  "2026-06-10T17:27:20+08:00"
+                       "last_seen":  "2026-06-10T17:27:20+08:00",
+                       "current_work":  "发现 6 条记录未通过验收。",
+                       "detail":  "提交 retry/drop/manual-fix 三选一建议。",
+                       "last_observed":  "2026-06-10T17:27:20+08:00"
                    },
                    {
                        "agent_id":  "Monitor",
@@ -339,7 +399,10 @@
                        "progress":  "8 个风险信号，2 个瓶颈",
                        "blocked_by":  "无",
                        "next_action":  "建议暂停低优先级任务，优先处理 Worker-3 和 Worker-9 卡点。",
-                       "last_seen":  "2026-06-10T18:11:51+08:00"
+                       "last_seen":  "2026-06-10T18:11:51+08:00",
+                       "current_work":  "扫描队列积压、锁冲突、心跳过期和降级需求。",
+                       "detail":  "建议暂停低优先级任务，优先处理 Worker-3 和 Worker-9 卡点。",
+                       "last_observed":  "2026-06-10T18:11:51+08:00"
                    },
                    {
                        "agent_id":  "Dashboard",
@@ -351,7 +414,10 @@
                        "progress":  "每 180 秒刷新",
                        "blocked_by":  "无",
                        "next_action":  "继续刷新快照。",
-                       "last_seen":  "2026-06-10T18:12:00+08:00"
+                       "last_seen":  "2026-06-10T18:12:00+08:00",
+                       "current_work":  "每 3 分钟读取 state.json 生成页面展示，不修改任何状态。",
+                       "detail":  "继续刷新快照。",
+                       "last_observed":  "2026-06-10T18:12:00+08:00"
                    }
                ],
     "blockers":  [
@@ -777,5 +843,114 @@
                                             "task_20260610_013"
                                         ]
                           }
-                      ]
+                      ],
+    "schema_version":  "1.3.0",
+    "entity_grid":  {
+                        "title":  "数据分片状态矩阵",
+                        "entity_type":  "record_batch",
+                        "columns":  [
+                                        "批次",
+                                        "阶段",
+                                        "负责人",
+                                        "记录数",
+                                        "验证",
+                                        "风险"
+                                    ],
+                        "rows":  [
+                                     {
+                                         "id":  "batch_001",
+                                         "label":  "首批 1-2000",
+                                         "stage":  "partially_completed",
+                                         "owner":  "Worker-1",
+                                         "count":  "2000",
+                                         "verification":  "passed",
+                                         "risk":  "api_rate_limit"
+                                     },
+                                     {
+                                         "id":  "batch_002",
+                                         "label":  "续传 2001-3480",
+                                         "stage":  "running",
+                                         "owner":  "Worker-2",
+                                         "count":  "1480",
+                                         "verification":  "queued",
+                                         "risk":  "rate_window"
+                                     },
+                                     {
+                                         "id":  "config_sync",
+                                         "label":  "配置同步",
+                                         "stage":  "running",
+                                         "owner":  "Worker-4",
+                                         "count":  "770/1200",
+                                         "verification":  "pending",
+                                         "risk":  "write_lock"
+                                     },
+                                     {
+                                         "id":  "rejects",
+                                         "label":  "异常记录",
+                                         "stage":  "needs_human_decision",
+                                         "owner":  "Verifier-2",
+                                         "count":  "6",
+                                         "verification":  "failed",
+                                         "risk":  "manual_disposition"
+                                     }
+                                 ]
+                    },
+    "display_dictionary":  {
+                               "status":  {
+                                              "active":  "活跃",
+                                              "running":  "进行中",
+                                              "done":  "已完成",
+                                              "partially_completed":  "部分完成",
+                                              "blocked":  "阻塞",
+                                              "queued":  "排队",
+                                              "verifying":  "验证中",
+                                              "failed":  "验证失败",
+                                              "warning":  "预警",
+                                              "read_only":  "只读",
+                                              "needs_human_decision":  "待人工决策",
+                                              "passed":  "验证通过"
+                                          },
+                               "risk":  {
+                                            "api_rate_limit":  "API 限流",
+                                            "rate_window":  "限流窗口",
+                                            "write_lock":  "写锁占用",
+                                            "manual_disposition":  "人工处置",
+                                            "none":  "无风险"
+                                        },
+                               "phase":  {
+                                             "planning":  "规划",
+                                             "execution":  "执行",
+                                             "verification":  "验证",
+                                             "monitoring":  "监控",
+                                             "dispatch":  "调度"
+                                         }
+                           },
+    "event_display_rules":  [
+                                {
+                                    "pattern":  "^worker\\\\.resumed$",
+                                    "label":  "Worker 从检查点恢复"
+                                },
+                                {
+                                    "pattern":  "^verification\\\\.failed$",
+                                    "label":  "验证失败"
+                                },
+                                {
+                                    "pattern":  "^dashboard\\\\.snapshot\\\\.created$",
+                                    "label":  "看板快照已生成"
+                                },
+                                {
+                                    "pattern":  "^checkpoint\\\\.created$",
+                                    "label":  "检查点已创建"
+                                }
+                            ],
+    "domain_extensions":  {
+                              "enabled":  true,
+                              "description":  "用于演示业务看板扩展字段；核心协议不绑定具体业务。",
+                              "allowed_sections":  [
+                                                       "summary.metrics",
+                                                       "entity_grid",
+                                                       "display_dictionary",
+                                                       "event_display_rules"
+                                                   ]
+                          }
 }

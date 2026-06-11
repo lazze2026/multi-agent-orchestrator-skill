@@ -1,18 +1,956 @@
-﻿{
-  "generated_at": "YYYY-MM-DDTHH:MM:SS+08:00",
-  "refresh_interval_seconds": 180,
-  "read_only": true,
-  "summary": {
-    "total_tasks": 0,
-    "running": 0,
-    "partially_completed": 0,
-    "blocked": 0,
-    "done": 0,
-    "open_risks": 0
-  },
-  "agents": [],
-  "tasks": [],
-  "recent_events": [],
-  "risks": [],
-  "checkpoints": []
+{
+    "generated_at":  "2026-06-10T18:12:00+08:00",
+    "refresh_interval_seconds":  180,
+    "read_only":  true,
+    "freshness":  {
+                      "status":  "current",
+                      "age":  "12s",
+                      "next_refresh_at":  "2026-06-10T18:15:00+08:00"
+                  },
+    "project":  {
+                    "name":  "客户数据导出与配置同步演练",
+                    "goal":  "模拟同一 AI 工具内多个逻辑 Agent 对批量导出、配置同步、验证恢复和异常调度的协同过程。",
+                    "mode":  "并行规划、串行执行、独立验证",
+                    "current_focus":  "恢复 API 限流后的续传任务，并解除配置写锁与验证失败卡点。"
+                },
+    "policy":  {
+                   "execution_mode":  "parallel-planning-serial-execution",
+                   "priority_policy":  "priority-then-fifo",
+                   "verification":  "risk-based sampling",
+                   "locks":  "read/write/exclusive",
+                   "auto_fix":  false,
+                   "write_authorization":  "task-spec-required"
+               },
+    "summary":  {
+                    "total_tasks":  16,
+                    "completed":  3,
+                    "in_progress":  5,
+                    "blocked":  3,
+                    "queued":  4,
+                    "needs_dispatch":  5,
+                    "open_risks":  8,
+                    "active_agents":  9,
+                    "stale_agents":  2,
+                    "metrics":  [
+                                    {
+                                        "id":  "task_completion",
+                                        "label":  "任务完成率",
+                                        "value":  "3/16",
+                                        "note":  "已完成任务 / 总任务",
+                                        "status":  "running"
+                                    },
+                                    {
+                                        "id":  "active_agents",
+                                        "label":  "活跃 Agent",
+                                        "value":  "9",
+                                        "note":  "含运行、验证、监控角色",
+                                        "status":  "active"
+                                    },
+                                    {
+                                        "id":  "blockers",
+                                        "label":  "当前卡点",
+                                        "value":  "4",
+                                        "note":  "含授权、锁冲突、验证失败",
+                                        "status":  "blocked"
+                                    },
+                                    {
+                                        "id":  "dispatch",
+                                        "label":  "待调度事项",
+                                        "value":  "5",
+                                        "note":  "需要 Coordinator 或用户处理",
+                                        "status":  "warning"
+                                    }
+                                ]
+                },
+    "task_groups":  [
+                        {
+                            "name":  "已完成",
+                            "status":  "done",
+                            "tasks":  [
+                                          {
+                                              "task_id":  "task_20260610_001_plan",
+                                              "title":  "拆分导出任务并生成 Worker Brief",
+                                              "owner":  "Planner-A",
+                                              "priority":  "normal",
+                                              "progress":  "100%",
+                                              "result":  "6 个 Worker Brief 已批准，依赖和锁规则已声明。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_003",
+                                              "title":  "校验首批样本字段完整性",
+                                              "owner":  "Verifier-1",
+                                              "priority":  "low",
+                                              "progress":  "100%",
+                                              "result":  "低风险样本通过，未发现字段缺失。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_014",
+                                              "title":  "生成初版静态看板快照",
+                                              "owner":  "Dashboard",
+                                              "priority":  "normal",
+                                              "progress":  "100%",
+                                              "result":  "只读看板已生成，刷新间隔 3 分钟。"
+                                          }
+                                      ]
+                        },
+                        {
+                            "name":  "正在进行",
+                            "status":  "running",
+                            "tasks":  [
+                                          {
+                                              "task_id":  "task_20260610_001",
+                                              "title":  "主导出任务总控",
+                                              "owner":  "Coordinator",
+                                              "priority":  "normal",
+                                              "progress":  "3480/5000 (70%)",
+                                              "next":  "等待 Worker-2 续传完成后触发高风险验证。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_001_sub_002",
+                                              "title":  "从第 2001 条继续导出客户记录",
+                                              "owner":  "Worker-2",
+                                              "priority":  "normal",
+                                              "progress":  "1480/3000 (49%)",
+                                              "next":  "继续导出剩余 1520 条，受 API 限流窗口影响。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_004",
+                                              "title":  "同步 backend/config.py 配置行",
+                                              "owner":  "Worker-4",
+                                              "priority":  "critical",
+                                              "progress":  "770/1200 (64%)",
+                                              "next":  "完成配置同步后释放写锁。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_005",
+                                              "title":  "中风险抽样验证",
+                                              "owner":  "Verifier-1",
+                                              "priority":  "normal",
+                                              "progress":  "42/80 (53%)",
+                                              "next":  "完成 80 条抽样校验。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_013",
+                                              "title":  "取消级联影响分析",
+                                              "owner":  "Coordinator",
+                                              "priority":  "high",
+                                              "progress":  "草案中",
+                                              "next":  "列出取消主任务会影响哪些依赖任务和交付物。"
+                                          }
+                                      ]
+                        },
+                        {
+                            "name":  "已部分完成",
+                            "status":  "partially_completed",
+                            "tasks":  [
+                                          {
+                                              "task_id":  "task_20260610_001_sub_001",
+                                              "title":  "导出首批 2000 条客户记录",
+                                              "owner":  "Worker-1",
+                                              "priority":  "normal",
+                                              "progress":  "2000/5000 (40%)",
+                                              "result":  "API 限流触发，output/batch_001.json 可复用。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_006",
+                                              "title":  "清洗异常客户记录",
+                                              "owner":  "Worker-5",
+                                              "priority":  "normal",
+                                              "progress":  "35/41 (85%)",
+                                              "result":  "35 条通过，6 条进入 rejects.json，等待处置。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_011",
+                                              "title":  "Monitor 汇总瓶颈分类",
+                                              "owner":  "Monitor",
+                                              "priority":  "normal",
+                                              "progress":  "2/4 (50%)",
+                                              "result":  "已识别 API 限流和写锁冲突两个瓶颈。"
+                                          }
+                                      ]
+                        },
+                        {
+                            "name":  "排队等待",
+                            "status":  "queued",
+                            "tasks":  [
+                                          {
+                                              "task_id":  "task_20260610_007",
+                                              "title":  "清理失败记录后的依赖任务",
+                                              "owner":  "Worker-6",
+                                              "priority":  "low",
+                                              "progress":  "0/3 (0%)",
+                                              "next":  "等待 task_20260610_006 人工处置结果。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_009",
+                                              "title":  "读取导出结果生成摘要",
+                                              "owner":  "Worker-8",
+                                              "priority":  "normal",
+                                              "progress":  "0/18 (0%)",
+                                              "next":  "等待读锁名额。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_012",
+                                              "title":  "低优先级文档补充",
+                                              "owner":  "Worker-10",
+                                              "priority":  "low",
+                                              "progress":  "0/5 (0%)",
+                                              "next":  "可被紧急任务抢占。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_015",
+                                              "title":  "补充 checkpoint 恢复说明",
+                                              "owner":  "Worker-11",
+                                              "priority":  "normal",
+                                              "progress":  "0/2 (0%)",
+                                              "next":  "等待 Coordinator 确认恢复范围。"
+                                          }
+                                      ]
+                        },
+                        {
+                            "name":  "卡住/待决策",
+                            "status":  "blocked",
+                            "tasks":  [
+                                          {
+                                              "task_id":  "task_20260610_002",
+                                              "title":  "写入配置导出路径",
+                                              "owner":  "Worker-3",
+                                              "priority":  "high",
+                                              "progress":  "0/1 (0%)",
+                                              "blocker":  "backend/config.py 写锁被 Worker-4 持有。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_006",
+                                              "title":  "6 条失败记录处置",
+                                              "owner":  "Verifier-2",
+                                              "priority":  "normal",
+                                              "progress":  "待人工决策",
+                                              "blocker":  "需要决定重试、丢弃还是人工修复。"
+                                          },
+                                          {
+                                              "task_id":  "task_20260610_010",
+                                              "title":  "备用数据源降级导出",
+                                              "owner":  "Worker-9",
+                                              "priority":  "critical",
+                                              "progress":  "310/900 (34%)",
+                                              "blocker":  "主数据源不可用，备用导出尚未授权。"
+                                          }
+                                      ]
+                        }
+                    ],
+    "agents":  [
+                   {
+                       "agent_id":  "Coordinator",
+                       "role":  "协调器",
+                       "status":  "active",
+                       "task_id":  "task_20260610_001",
+                       "task_title":  "主导出任务总控",
+                       "task_description":  "统筹导出、验证、锁释放和取消级联分析。",
+                       "progress":  "协调 13/16 个任务",
+                       "blocked_by":  "无",
+                       "next_action":  "等待 Worker-2 与 Worker-4 的结果，随后触发验证和锁释放决策。",
+                       "last_seen":  "2026-06-10T18:11:51+08:00",
+                       "current_work":  "统筹导出、验证、锁释放和取消级联分析。",
+                       "detail":  "等待 Worker-2 与 Worker-4 的结果，随后触发验证和锁释放决策。",
+                       "last_observed":  "2026-06-10T18:11:51+08:00"
+                   },
+                   {
+                       "agent_id":  "Planner-A",
+                       "role":  "规划员",
+                       "status":  "done",
+                       "task_id":  "task_20260610_001_plan",
+                       "task_title":  "拆分导出任务并生成 Worker Brief",
+                       "task_description":  "完成任务拆解、依赖、授权和验收条件声明。",
+                       "progress":  "6/6 个任务卡已批准",
+                       "blocked_by":  "无",
+                       "next_action":  "已交回 Coordinator。",
+                       "last_seen":  "2026-06-10T17:02:40+08:00",
+                       "current_work":  "完成任务拆解、依赖、授权和验收条件声明。",
+                       "detail":  "已交回 Coordinator。",
+                       "last_observed":  "2026-06-10T17:02:40+08:00"
+                   },
+                   {
+                       "agent_id":  "Worker-1",
+                       "role":  "执行者",
+                       "status":  "partially_completed",
+                       "task_id":  "task_20260610_001_sub_001",
+                       "task_title":  "导出首批 2000 条客户记录",
+                       "task_description":  "已产出可复用 batch_001.json，因 API 限流暂停。",
+                       "progress":  "2000/5000 (40%)",
+                       "blocked_by":  "API 限流窗口",
+                       "next_action":  "由 Verifier 确认输出可复用，再由 Worker-2 续传。",
+                       "last_seen":  "2026-06-10T17:11:00+08:00",
+                       "current_work":  "已产出可复用 batch_001.json，因 API 限流暂停。",
+                       "detail":  "由 Verifier 确认输出可复用，再由 Worker-2 续传。",
+                       "last_observed":  "2026-06-10T17:11:00+08:00"
+                   },
+                   {
+                       "agent_id":  "Worker-2",
+                       "role":  "执行者",
+                       "status":  "running",
+                       "task_id":  "task_20260610_001_sub_002",
+                       "task_title":  "从第 2001 条继续导出客户记录",
+                       "task_description":  "从 checkpoint 恢复后继续导出剩余客户记录。",
+                       "progress":  "1480/3000 (49%)",
+                       "blocked_by":  "未阻塞，但受 API 窗口约束",
+                       "next_action":  "继续导出并准备交给 Verifier-1 做 100% 校验。",
+                       "last_seen":  "2026-06-10T18:11:20+08:00",
+                       "current_work":  "从 checkpoint 恢复后继续导出剩余客户记录。",
+                       "detail":  "继续导出并准备交给 Verifier-1 做 100% 校验。",
+                       "last_observed":  "2026-06-10T18:11:20+08:00"
+                   },
+                   {
+                       "agent_id":  "Worker-3",
+                       "role":  "执行者",
+                       "status":  "blocked",
+                       "task_id":  "task_20260610_002",
+                       "task_title":  "写入配置导出路径",
+                       "task_description":  "需要修改配置导出路径，但目标文件被其他任务持有写锁。",
+                       "progress":  "0/1 (0%)",
+                       "blocked_by":  "Worker-4 持有 backend/config.py 写锁",
+                       "next_action":  "等待锁释放，或由 Coordinator 决定是否调整优先级。",
+                       "last_seen":  "2026-06-10T17:29:20+08:00",
+                       "current_work":  "需要修改配置导出路径，但目标文件被其他任务持有写锁。",
+                       "detail":  "等待锁释放，或由 Coordinator 决定是否调整优先级。",
+                       "last_observed":  "2026-06-10T17:29:20+08:00"
+                   },
+                   {
+                       "agent_id":  "Worker-4",
+                       "role":  "执行者",
+                       "status":  "running",
+                       "task_id":  "task_20260610_004",
+                       "task_title":  "同步 backend/config.py 配置行",
+                       "task_description":  "正在写入配置行，因此持有 backend/config.py 写锁。",
+                       "progress":  "770/1200 (64%)",
+                       "blocked_by":  "无",
+                       "next_action":  "尽快完成并释放写锁，解除 Worker-3 卡点。",
+                       "last_seen":  "2026-06-10T18:10:30+08:00",
+                       "current_work":  "正在写入配置行，因此持有 backend/config.py 写锁。",
+                       "detail":  "尽快完成并释放写锁，解除 Worker-3 卡点。",
+                       "last_observed":  "2026-06-10T18:10:30+08:00"
+                   },
+                   {
+                       "agent_id":  "Worker-5",
+                       "role":  "执行者",
+                       "status":  "partially_completed",
+                       "task_id":  "task_20260610_006",
+                       "task_title":  "清洗异常客户记录",
+                       "task_description":  "已清洗大多数异常记录，剩余 6 条进入 rejects.json。",
+                       "progress":  "35/41 (85%)",
+                       "blocked_by":  "6 条记录需要人工处置策略",
+                       "next_action":  "等待 Verifier-2 和用户决策。",
+                       "last_seen":  "2026-06-10T17:22:05+08:00",
+                       "current_work":  "已清洗大多数异常记录，剩余 6 条进入 rejects.json。",
+                       "detail":  "等待 Verifier-2 和用户决策。",
+                       "last_observed":  "2026-06-10T17:22:05+08:00"
+                   },
+                   {
+                       "agent_id":  "Worker-6",
+                       "role":  "执行者",
+                       "status":  "queued",
+                       "task_id":  "task_20260610_007",
+                       "task_title":  "清理失败记录后的依赖任务",
+                       "task_description":  "依赖 task_20260610_006 的处置结果。",
+                       "progress":  "0/3 (0%)",
+                       "blocked_by":  "依赖任务未完成",
+                       "next_action":  "等待 task_20260610_006 到 done 或获得人工处置。",
+                       "last_seen":  "2026-06-10T17:33:00+08:00",
+                       "current_work":  "依赖 task_20260610_006 的处置结果。",
+                       "detail":  "等待 task_20260610_006 到 done 或获得人工处置。",
+                       "last_observed":  "2026-06-10T17:33:00+08:00"
+                   },
+                   {
+                       "agent_id":  "Verifier-1",
+                       "role":  "验证者",
+                       "status":  "verifying",
+                       "task_id":  "task_20260610_001_sub_002",
+                       "task_title":  "续传导出结果高风险验证",
+                       "task_description":  "高风险任务需要 100% 校验后才能合并。",
+                       "progress":  "高风险 100% 校验排队中",
+                       "blocked_by":  "等待 Worker-2 交付完整输出",
+                       "next_action":  "准备校验记录连续性、数量和最后 ID。",
+                       "last_seen":  "2026-06-10T18:11:35+08:00",
+                       "current_work":  "高风险任务需要 100% 校验后才能合并。",
+                       "detail":  "准备校验记录连续性、数量和最后 ID。",
+                       "last_observed":  "2026-06-10T18:11:35+08:00"
+                   },
+                   {
+                       "agent_id":  "Verifier-2",
+                       "role":  "验证者",
+                       "status":  "failed",
+                       "task_id":  "task_20260610_006",
+                       "task_title":  "异常记录验收",
+                       "task_description":  "发现 6 条记录未通过验收。",
+                       "progress":  "6/41 条被拒绝",
+                       "blocked_by":  "需要人工决定失败记录处理方式",
+                       "next_action":  "提交 retry/drop/manual-fix 三选一建议。",
+                       "last_seen":  "2026-06-10T17:27:20+08:00",
+                       "current_work":  "发现 6 条记录未通过验收。",
+                       "detail":  "提交 retry/drop/manual-fix 三选一建议。",
+                       "last_observed":  "2026-06-10T17:27:20+08:00"
+                   },
+                   {
+                       "agent_id":  "Monitor",
+                       "role":  "监控员",
+                       "status":  "warning",
+                       "task_id":  "task_20260610_011",
+                       "task_title":  "瓶颈与风险监控",
+                       "task_description":  "扫描队列积压、锁冲突、心跳过期和降级需求。",
+                       "progress":  "8 个风险信号，2 个瓶颈",
+                       "blocked_by":  "无",
+                       "next_action":  "建议暂停低优先级任务，优先处理 Worker-3 和 Worker-9 卡点。",
+                       "last_seen":  "2026-06-10T18:11:51+08:00",
+                       "current_work":  "扫描队列积压、锁冲突、心跳过期和降级需求。",
+                       "detail":  "建议暂停低优先级任务，优先处理 Worker-3 和 Worker-9 卡点。",
+                       "last_observed":  "2026-06-10T18:11:51+08:00"
+                   },
+                   {
+                       "agent_id":  "Dashboard",
+                       "role":  "看板",
+                       "status":  "read_only",
+                       "task_id":  "dashboard",
+                       "task_title":  "只读状态展示",
+                       "task_description":  "每 3 分钟读取 state.json 生成页面展示，不修改任何状态。",
+                       "progress":  "每 180 秒刷新",
+                       "blocked_by":  "无",
+                       "next_action":  "继续刷新快照。",
+                       "last_seen":  "2026-06-10T18:12:00+08:00",
+                       "current_work":  "每 3 分钟读取 state.json 生成页面展示，不修改任何状态。",
+                       "detail":  "继续刷新快照。",
+                       "last_observed":  "2026-06-10T18:12:00+08:00"
+                   }
+               ],
+    "blockers":  [
+                     {
+                         "level":  "critical",
+                         "agent":  "Worker-9",
+                         "task_id":  "task_20260610_010",
+                         "task_title":  "备用数据源降级导出",
+                         "reason":  "主数据源不可用，备用导出尚未授权。",
+                         "impact":  "critical 任务无法继续，已完成的 310 条记录需要保留。",
+                         "decision_needed":  "是否授权切换到备用数据源。"
+                     },
+                     {
+                         "level":  "high",
+                         "agent":  "Worker-3",
+                         "task_id":  "task_20260610_002",
+                         "task_title":  "写入配置导出路径",
+                         "reason":  "backend/config.py 写锁被 Worker-4 持有。",
+                         "impact":  "高优先级配置路径写入无法开始。",
+                         "decision_needed":  "等待 Worker-4 释放锁，或暂停低优先级写操作。"
+                     },
+                     {
+                         "level":  "medium",
+                         "agent":  "Verifier-2",
+                         "task_id":  "task_20260610_006",
+                         "task_title":  "异常记录验收",
+                         "reason":  "6 条记录未通过验收，需要人工处置。",
+                         "impact":  "Worker-6 依赖任务无法启动。",
+                         "decision_needed":  "选择 retry、drop 或 manual-fix。"
+                     },
+                     {
+                         "level":  "medium",
+                         "agent":  "Worker-2",
+                         "task_id":  "task_20260610_001_sub_002",
+                         "task_title":  "续传导出客户记录",
+                         "reason":  "API 限流窗口还有 8 分钟。",
+                         "impact":  "续传速度受限，Verifier-1 无法开始完整校验。",
+                         "decision_needed":  "继续等待限流窗口，或授权批量导出降级方案。"
+                     }
+                 ],
+    "swimlanes":  [
+                      {
+                          "lane":  "规划",
+                          "owner":  "Planner-A",
+                          "items":  [
+                                        {
+                                            "label":  "任务拆解",
+                                            "status":  "done"
+                                        },
+                                        {
+                                            "label":  "依赖声明",
+                                            "status":  "done"
+                                        },
+                                        {
+                                            "label":  "验收条件",
+                                            "status":  "done"
+                                        }
+                                    ]
+                      },
+                      {
+                          "lane":  "执行",
+                          "owner":  "Worker-1/2/4/5",
+                          "items":  [
+                                        {
+                                            "label":  "首批导出 2000 条",
+                                            "status":  "partially_completed"
+                                        },
+                                        {
+                                            "label":  "续传 2001-5000",
+                                            "status":  "running"
+                                        },
+                                        {
+                                            "label":  "配置同步",
+                                            "status":  "running"
+                                        },
+                                        {
+                                            "label":  "异常记录清洗",
+                                            "status":  "partially_completed"
+                                        }
+                                    ]
+                      },
+                      {
+                          "lane":  "验证",
+                          "owner":  "Verifier-1/2",
+                          "items":  [
+                                        {
+                                            "label":  "首批输出可复用验证",
+                                            "status":  "done"
+                                        },
+                                        {
+                                            "label":  "续传结果 100% 验证",
+                                            "status":  "queued"
+                                        },
+                                        {
+                                            "label":  "异常记录验收",
+                                            "status":  "blocked"
+                                        }
+                                    ]
+                      },
+                      {
+                          "lane":  "监控",
+                          "owner":  "Monitor",
+                          "items":  [
+                                        {
+                                            "label":  "识别锁冲突",
+                                            "status":  "done"
+                                        },
+                                        {
+                                            "label":  "识别 API 限流",
+                                            "status":  "done"
+                                        },
+                                        {
+                                            "label":  "预测队列积压",
+                                            "status":  "running"
+                                        }
+                                    ]
+                      },
+                      {
+                          "lane":  "调度",
+                          "owner":  "Coordinator",
+                          "items":  [
+                                        {
+                                            "label":  "释放配置写锁",
+                                            "status":  "running"
+                                        },
+                                        {
+                                            "label":  "授权备用数据源",
+                                            "status":  "blocked"
+                                        },
+                                        {
+                                            "label":  "失败记录处置",
+                                            "status":  "blocked"
+                                        },
+                                        {
+                                            "label":  "取消级联分析",
+                                            "status":  "running"
+                                        }
+                                    ]
+                      }
+                  ],
+    "dispatch_actions":  [
+                             {
+                                 "priority":  "critical",
+                                 "owner":  "Coordinator",
+                                 "action":  "决定是否授权 Worker-9 使用备用数据源继续导出。",
+                                 "reason":  "主数据源不可用，critical 任务已阻塞。",
+                                 "target_agents":  [
+                                                       "Worker-9",
+                                                       "Verifier-1"
+                                                   ],
+                                 "expected_result":  "生成降级 Worker Brief，保留 310 条已完成记录。"
+                             },
+                             {
+                                 "priority":  "high",
+                                 "owner":  "Coordinator",
+                                 "action":  "推动 Worker-4 尽快完成配置同步并释放 backend/config.py 写锁。",
+                                 "reason":  "Worker-3 被写锁阻塞，影响高优先级配置路径写入。",
+                                 "target_agents":  [
+                                                       "Worker-4",
+                                                       "Worker-3"
+                                                   ],
+                                 "expected_result":  "Worker-3 获得写锁后继续执行。"
+                             },
+                             {
+                                 "priority":  "high",
+                                 "owner":  "用户/Coordinator",
+                                 "action":  "为 6 条失败记录选择 retry、drop 或 manual-fix。",
+                                 "reason":  "Verifier-2 验证失败，Worker-6 依赖任务无法启动。",
+                                 "target_agents":  [
+                                                       "Verifier-2",
+                                                       "Worker-5",
+                                                       "Worker-6"
+                                                   ],
+                                 "expected_result":  "解除 task_20260610_006 的人工决策状态。"
+                             },
+                             {
+                                 "priority":  "normal",
+                                 "owner":  "Monitor",
+                                 "action":  "建议暂停 Worker-10 的低优先级文档补充任务。",
+                                 "reason":  "队列深度为 5，critical/high 卡点未解除。",
+                                 "target_agents":  [
+                                                       "Worker-10"
+                                                   ],
+                                 "expected_result":  "释放调度注意力，避免低优先级任务抢占资源。"
+                             },
+                             {
+                                 "priority":  "normal",
+                                 "owner":  "Verifier-1",
+                                 "action":  "准备续传导出完成后的 100% 校验清单。",
+                                 "reason":  "Worker-2 即将交付高风险续传结果。",
+                                 "target_agents":  [
+                                                       "Worker-2",
+                                                       "Verifier-1"
+                                                   ],
+                                 "expected_result":  "交付后可立即验证，不增加等待时间。"
+                             }
+                         ],
+    "recent_events":  [
+                          {
+                              "event_id":  "evt_20260610_0105",
+                              "time":  "2026-06-10T18:11:20+08:00",
+                              "agent":  "Worker-2",
+                              "event":  "worker.resumed",
+                              "summary":  "从 checkpoint 恢复，继续导出第 2001 条。",
+                              "caused_by":  "checkpoint.resume",
+                              "task_id":  "task_20260610_001_sub_002"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0104",
+                              "time":  "2026-06-10T18:10:30+08:00",
+                              "agent":  "Worker-4",
+                              "event":  "worker.progress",
+                              "summary":  "配置同步完成 770/1200 行，继续持有 backend/config.py 写锁。",
+                              "caused_by":  "authorized.write",
+                              "task_id":  "task_20260610_004"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0103",
+                              "time":  "2026-06-10T18:09:40+08:00",
+                              "agent":  "Monitor",
+                              "event":  "monitor.warning",
+                              "summary":  "检测到 Worker-3 因写锁冲突阻塞超过 40 分钟。",
+                              "caused_by":  "lock_conflict",
+                              "task_id":  "task_20260610_002"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0102",
+                              "time":  "2026-06-10T18:08:50+08:00",
+                              "agent":  "Verifier-1",
+                              "event":  "verification.prepared",
+                              "summary":  "已准备续传导出结果的 100% 校验清单。",
+                              "caused_by":  "risk_based_policy",
+                              "task_id":  "task_20260610_001_sub_002"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0101",
+                              "time":  "2026-06-10T18:07:10+08:00",
+                              "agent":  "Verifier-2",
+                              "event":  "verification.failed",
+                              "summary":  "6 条异常客户记录未通过验收，进入人工处置。",
+                              "caused_by":  "acceptance_failed",
+                              "task_id":  "task_20260610_006"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0100",
+                              "time":  "2026-06-10T18:05:40+08:00",
+                              "agent":  "Coordinator",
+                              "event":  "needs.human.decision",
+                              "summary":  "请求用户决定失败记录 retry、drop 或 manual-fix。",
+                              "caused_by":  "verification_failed",
+                              "task_id":  "task_20260610_006"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0099",
+                              "time":  "2026-06-10T18:03:00+08:00",
+                              "agent":  "Dashboard",
+                              "event":  "dashboard.snapshot.created",
+                              "summary":  "生成只读看板快照，刷新间隔 180 秒。",
+                              "caused_by":  "timer",
+                              "task_id":  "dashboard"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0098",
+                              "time":  "2026-06-10T18:01:10+08:00",
+                              "agent":  "Worker-9",
+                              "event":  "worker.blocked",
+                              "summary":  "主数据源不可用，备用数据源未授权。",
+                              "caused_by":  "data_source_unavailable",
+                              "task_id":  "task_20260610_010"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0097",
+                              "time":  "2026-06-10T17:58:00+08:00",
+                              "agent":  "Coordinator",
+                              "event":  "checkpoint.created",
+                              "summary":  "创建恢复检查点，记录已完成 3 个任务、部分完成 2 个任务。",
+                              "caused_by":  "pause_or_risk",
+                              "task_id":  "task_20260610_001"
+                          },
+                          {
+                              "event_id":  "evt_20260610_0096",
+                              "time":  "2026-06-10T17:55:20+08:00",
+                              "agent":  "Worker-1",
+                              "event":  "worker.partially_completed",
+                              "summary":  "首批 2000 条导出完成，因 API 限流暂停。",
+                              "caused_by":  "api_rate_limit",
+                              "task_id":  "task_20260610_001_sub_001"
+                          }
+                      ],
+    "checkpoints":  [
+                        {
+                            "checkpoint_id":  "ckpt_20260610_001",
+                            "created_at":  "2026-06-10T17:15:00+08:00",
+                            "status":  "resumable",
+                            "completed_tasks":  3,
+                            "partially_completed_tasks":  2,
+                            "blocked_tasks":  1,
+                            "can_resume":  true,
+                            "resume_from":  "task_20260610_001_sub_002",
+                            "evidence":  "batch_001.json 存在，包含 2000 条记录，最后 ID 为 2000。"
+                        },
+                        {
+                            "checkpoint_id":  "ckpt_20260610_002",
+                            "created_at":  "2026-06-10T17:58:00+08:00",
+                            "status":  "needs_decision",
+                            "completed_tasks":  3,
+                            "partially_completed_tasks":  3,
+                            "blocked_tasks":  3,
+                            "can_resume":  true,
+                            "resume_from":  "task_20260610_006",
+                            "evidence":  "rejects.json 已生成，6 条失败记录等待处置。"
+                        },
+                        {
+                            "checkpoint_id":  "ckpt_20260610_003",
+                            "created_at":  "2026-06-10T18:11:00+08:00",
+                            "status":  "current",
+                            "completed_tasks":  3,
+                            "partially_completed_tasks":  3,
+                            "blocked_tasks":  3,
+                            "can_resume":  true,
+                            "resume_from":  "task_20260610_010",
+                            "evidence":  "Worker-9 已完成 310/900，备用数据源授权缺失。"
+                        }
+                    ],
+    "flow_timeline":  [
+                          {
+                              "phase":  "规划",
+                              "start":  1,
+                              "span":  2,
+                              "owner":  "Planner-A",
+                              "title":  "任务拆解与授权",
+                              "status":  "done",
+                              "tasks":  [
+                                            "task_20260610_001_plan"
+                                        ]
+                          },
+                          {
+                              "phase":  "执行",
+                              "start":  3,
+                              "span":  2,
+                              "owner":  "Worker-1",
+                              "title":  "首批导出 2000 条",
+                              "status":  "partially_completed",
+                              "tasks":  [
+                                            "task_20260610_001_sub_001"
+                                        ]
+                          },
+                          {
+                              "phase":  "执行",
+                              "start":  5,
+                              "span":  3,
+                              "owner":  "Worker-2",
+                              "title":  "续传 2001-5000",
+                              "status":  "running",
+                              "tasks":  [
+                                            "task_20260610_001_sub_002"
+                                        ]
+                          },
+                          {
+                              "phase":  "执行",
+                              "start":  4,
+                              "span":  4,
+                              "owner":  "Worker-4",
+                              "title":  "配置同步并持有写锁",
+                              "status":  "running",
+                              "tasks":  [
+                                            "task_20260610_004"
+                                        ]
+                          },
+                          {
+                              "phase":  "验证",
+                              "start":  7,
+                              "span":  2,
+                              "owner":  "Verifier-1",
+                              "title":  "续传结果 100% 校验",
+                              "status":  "queued",
+                              "tasks":  [
+                                            "task_20260610_005"
+                                        ]
+                          },
+                          {
+                              "phase":  "验证",
+                              "start":  5,
+                              "span":  2,
+                              "owner":  "Verifier-2",
+                              "title":  "异常记录验收",
+                              "status":  "blocked",
+                              "tasks":  [
+                                            "task_20260610_006"
+                                        ]
+                          },
+                          {
+                              "phase":  "监控",
+                              "start":  2,
+                              "span":  7,
+                              "owner":  "Monitor",
+                              "title":  "风险扫描与瓶颈预测",
+                              "status":  "running",
+                              "tasks":  [
+                                            "task_20260610_011"
+                                        ]
+                          },
+                          {
+                              "phase":  "调度",
+                              "start":  8,
+                              "span":  2,
+                              "owner":  "Coordinator",
+                              "title":  "备用数据源授权决策",
+                              "status":  "blocked",
+                              "tasks":  [
+                                            "task_20260610_010"
+                                        ]
+                          },
+                          {
+                              "phase":  "调度",
+                              "start":  7,
+                              "span":  3,
+                              "owner":  "Coordinator",
+                              "title":  "失败记录处置与取消级联",
+                              "status":  "needs_human_decision",
+                              "tasks":  [
+                                            "task_20260610_006",
+                                            "task_20260610_013"
+                                        ]
+                          }
+                      ],
+    "schema_version":  "1.3.0",
+    "entity_grid":  {
+                        "title":  "数据分片状态矩阵",
+                        "entity_type":  "record_batch",
+                        "columns":  [
+                                        "批次",
+                                        "阶段",
+                                        "负责人",
+                                        "记录数",
+                                        "验证",
+                                        "风险"
+                                    ],
+                        "rows":  [
+                                     {
+                                         "id":  "batch_001",
+                                         "label":  "首批 1-2000",
+                                         "stage":  "partially_completed",
+                                         "owner":  "Worker-1",
+                                         "count":  "2000",
+                                         "verification":  "passed",
+                                         "risk":  "api_rate_limit"
+                                     },
+                                     {
+                                         "id":  "batch_002",
+                                         "label":  "续传 2001-3480",
+                                         "stage":  "running",
+                                         "owner":  "Worker-2",
+                                         "count":  "1480",
+                                         "verification":  "queued",
+                                         "risk":  "rate_window"
+                                     },
+                                     {
+                                         "id":  "config_sync",
+                                         "label":  "配置同步",
+                                         "stage":  "running",
+                                         "owner":  "Worker-4",
+                                         "count":  "770/1200",
+                                         "verification":  "pending",
+                                         "risk":  "write_lock"
+                                     },
+                                     {
+                                         "id":  "rejects",
+                                         "label":  "异常记录",
+                                         "stage":  "needs_human_decision",
+                                         "owner":  "Verifier-2",
+                                         "count":  "6",
+                                         "verification":  "failed",
+                                         "risk":  "manual_disposition"
+                                     }
+                                 ]
+                    },
+    "display_dictionary":  {
+                               "status":  {
+                                              "active":  "活跃",
+                                              "running":  "进行中",
+                                              "done":  "已完成",
+                                              "partially_completed":  "部分完成",
+                                              "blocked":  "阻塞",
+                                              "queued":  "排队",
+                                              "verifying":  "验证中",
+                                              "failed":  "验证失败",
+                                              "warning":  "预警",
+                                              "read_only":  "只读",
+                                              "needs_human_decision":  "待人工决策",
+                                              "passed":  "验证通过"
+                                          },
+                               "risk":  {
+                                            "api_rate_limit":  "API 限流",
+                                            "rate_window":  "限流窗口",
+                                            "write_lock":  "写锁占用",
+                                            "manual_disposition":  "人工处置",
+                                            "none":  "无风险"
+                                        },
+                               "phase":  {
+                                             "planning":  "规划",
+                                             "execution":  "执行",
+                                             "verification":  "验证",
+                                             "monitoring":  "监控",
+                                             "dispatch":  "调度"
+                                         }
+                           },
+    "event_display_rules":  [
+                                {
+                                    "pattern":  "^worker\\\\.resumed$",
+                                    "label":  "Worker 从检查点恢复"
+                                },
+                                {
+                                    "pattern":  "^verification\\\\.failed$",
+                                    "label":  "验证失败"
+                                },
+                                {
+                                    "pattern":  "^dashboard\\\\.snapshot\\\\.created$",
+                                    "label":  "看板快照已生成"
+                                },
+                                {
+                                    "pattern":  "^checkpoint\\\\.created$",
+                                    "label":  "检查点已创建"
+                                }
+                            ],
+    "domain_extensions":  {
+                              "enabled":  true,
+                              "description":  "用于演示业务看板扩展字段；核心协议不绑定具体业务。",
+                              "allowed_sections":  [
+                                                       "summary.metrics",
+                                                       "entity_grid",
+                                                       "display_dictionary",
+                                                       "event_display_rules"
+                                                   ]
+                          }
 }

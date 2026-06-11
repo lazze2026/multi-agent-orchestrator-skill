@@ -4,7 +4,7 @@ A practical Skill for coordinating logical multi-agent work inside one AI coding
 
 > 中文简介：这是一个面向 Codex、ClaudeCode、OpenClaw 等 AI 编程工具的多 Agent 协同 SKILL。它不创建真实后台进程，而是在同一个 AI 工具会话内，用 Coordinator / Worker / Verifier / Monitor / Dashboard 等逻辑角色，把长任务拆解、执行、验证、恢复和看板展示标准化。
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/lazze2026/multi-agent-orchestrator-skill)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](https://github.com/lazze2026/multi-agent-orchestrator-skill)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Skill](https://img.shields.io/badge/AI%20Skill-Codex%20%7C%20ClaudeCode%20%7C%20OpenClaw-7047c6.svg)](SKILL.md)
 [![Dashboard](https://img.shields.io/badge/dashboard-static%20HTML-087443.svg)](tests/simulations/dashboard-static-html/)
@@ -33,6 +33,7 @@ This Skill gives those workflows a small operating protocol: plan first, execute
 - **Independent Verifier**: checks deliverables from the task spec, not from the worker's self-assessment.
 - **Monitor warnings**: lock conflicts, stale agents, queue pressure, rate limits, fallback decisions.
 - **Read-only dashboard**: Agent state, task breakdown, blockers, timeline, checkpoints, dispatch actions, recent events.
+- **v1.3.0 dashboard schema**: top metrics, richer Agent cards, entity grid, display dictionary, event label rules, optional domain extensions.
 
 ## Quick Start
 
@@ -72,6 +73,14 @@ http://127.0.0.1:8765/index.html
 
 The dashboard reads only `state.json`. It does not mutate queue, events, locks, reports, checkpoints, or task status.
 
+In `v1.3.0`, the dashboard schema can also expose:
+
+- `summary.metrics` for premium KPI cards
+- `agents[].current_work`, `detail`, `last_observed`
+- `entity_grid` for generic batch/module/shard matrix views
+- `display_dictionary` and `event_display_rules` for better localized rendering
+- `domain_extensions` for business-specific display additions without polluting the core protocol
+
 ## Generate Dashboard State
 
 Requirements:
@@ -102,6 +111,8 @@ Validate a dashboard state file:
 ```bash
 python scripts/validate_state.py ./workspace/dashboard/state.json
 ```
+
+The validator understands the optional `v1.3.0` dashboard fields and still accepts the smaller minimal schema.
 
 Linux/Mac wrapper:
 

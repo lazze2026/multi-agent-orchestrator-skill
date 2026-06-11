@@ -1,6 +1,6 @@
 # Multi-Agent Orchestrator Skill Design
 
-**版本**: v1.2.0  
+**版本**: v1.3.0  
 **用途**: 单个 AI 工具内的逻辑多 Agent 协同调度协议  
 **适用工具**: Codex、ClaudeCode、OpenClaw 等具备文件读写、命令执行、长上下文推理能力的单一 AI 工具  
 **状态**: Design Revised  
@@ -510,7 +510,7 @@ task.done
 
 ```json
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "min_compatible_version": "1.0.0",
   "schema_hash": "sha256:<computed-from-schema>",
   "mode": "single-tool-logical-agents",
@@ -878,16 +878,37 @@ Dashboard 是只读状态视图，用于定期查看每个逻辑 Agent 的工作
 
 ```json
 {
+  "schema_version": "1.3.0",
   "generated_at": "2026-06-10T10:00:00+08:00",
   "refresh_interval_seconds": 180,
   "read_only": true,
+  "freshness": {
+    "status": "current",
+    "age": "12s",
+    "next_refresh_at": "2026-06-10T10:03:00+08:00"
+  },
+  "project": {
+    "name": "客户数据导出协同任务",
+    "goal": "导出、验证、恢复和调度都可追踪",
+    "mode": "parallel-planning-serial-execution",
+    "current_focus": "恢复限流后的续传任务"
+  },
   "summary": {
     "total_tasks": 4,
-    "running": 1,
-    "partially_completed": 1,
+    "completed": 1,
+    "in_progress": 1,
     "blocked": 1,
-    "done": 1,
-    "open_risks": 2
+    "queued": 1,
+    "open_risks": 2,
+    "metrics": [
+      {
+        "id": "task_completion",
+        "label": "任务完成率",
+        "value": "1/4",
+        "note": "已完成任务 / 总任务数",
+        "status": "running"
+      }
+    ]
   },
   "agents": [
     {
@@ -895,30 +916,88 @@ Dashboard 是只读状态视图，用于定期查看每个逻辑 Agent 的工作
       "role": "Worker",
       "status": "partially_completed",
       "task_id": "task_20260610_001_sub_001",
+      "task_title": "导出首批 2000 条客户记录",
+      "task_description": "首批导出完成，因 API 限流进入部分完成状态",
       "progress": "2000/5000 (40%)",
       "last_event_id": "evt_20260610_0005",
       "last_seen": "2026-06-10T09:57:00+08:00",
-      "next": "Verifier"
-    }
-  ],
-  "tasks": [
-    {
-      "task_id": "task_20260610_001_sub_001",
-      "owner": "Worker-1",
-      "priority": "normal",
-      "status": "partially_completed",
-      "progress": "2000/5000 (40%)",
       "next": "Verifier",
-      "open_risks": ["API rate limit"]
+      "current_work": "首批 2000 条客户记录已导出",
+      "detail": "等待 Verifier 确认 batch_001.json 可复用",
+      "last_observed": "2026-06-10T09:57:00+08:00"
     }
   ],
+  "task_groups": [
+    {
+      "name": "已部分完成",
+      "status": "partially_completed",
+      "tasks": [
+        {
+          "task_id": "task_20260610_001_sub_001",
+          "title": "导出首批 2000 条客户记录",
+          "owner": "Worker-1",
+          "priority": "normal",
+          "progress": "2000/5000 (40%)",
+          "result": "output/batch_001.json 可复用"
+        }
+      ]
+    }
+  ],
+  "flow_timeline": [],
+  "dispatch_actions": [],
   "recent_events": [],
-  "risks": [],
-  "checkpoints": []
+  "checkpoints": [],
+  "entity_grid": {
+    "title": "任务实体状态矩阵",
+    "entity_type": "task",
+    "columns": ["实体", "阶段", "负责人", "进度", "下一步/验证", "风险"],
+    "rows": []
+  },
+  "display_dictionary": {
+    "status": {
+      "partially_completed": "部分完成",
+      "blocked": "阻塞",
+      "queued": "排队"
+    }
+  },
+  "event_display_rules": [
+    {
+      "pattern": "^worker\\.resumed$",
+      "label": "Worker 从检查点恢复"
+    }
+  ],
+  "domain_extensions": {
+    "enabled": false,
+    "allowed_sections": ["summary.metrics", "entity_grid", "display_dictionary", "event_display_rules"]
+  }
 }
 ```
 
-### 18.2 看板规则
+### 18.2 展示扩展字段
+
+`state.json` 的核心目标仍然是只读快照，但从 v1.3.0 开始，协议允许一组**通用展示扩展字段**，用于承接更丰富的看板，而不把协议绑定到某个具体业务域。
+
+这些字段均为可选：
+
+| 字段 | 作用 | 约束 |
+|------|------|------|
+| `schema_version` | 标记看板状态结构版本 | 推荐与协议版本同步 |
+| `summary.metrics[]` | 顶部指标卡，自定义但通用 | 不替代 `summary` 的基础统计字段 |
+| `agents[].current_work` | Agent 当前在做什么 | 面向人读，不只是 task ID |
+| `agents[].detail` | 额外说明、约束或下一步 | 可用于显示卡点背景 |
+| `agents[].last_observed` | 最近一次观察时间 | 用于比 `last_seen` 更细的展示 |
+| `entity_grid` | 通用实体矩阵视图 | 允许映射任务、批次、模块、分片等 |
+| `display_dictionary` | 展示层翻译字典 | 只影响 UI 呈现，不改变底层状态语义 |
+| `event_display_rules` | 事件名映射规则 | 用于把事件代码转成人类可读标签 |
+| `domain_extensions` | 业务域扩展声明 | 只能声明，不应修改核心协议含义 |
+
+规则：
+
+- 扩展字段必须保持**业务无关的通用命名**。
+- 业务专有字段应收敛在 `domain_extensions` 或外部派生文件中，不应污染核心状态结构。
+- 展示层扩展不能改变授权、锁、验证、状态机、checkpoint 的核心行为。
+
+### 18.3 看板规则
 
 - 看板只读，不得写队列、事件、锁、checkpoint、报告或任务状态。
 - 页面必须显示 `generated_at`、刷新间隔和 stale 状态。
@@ -928,7 +1007,7 @@ Dashboard 是只读状态视图，用于定期查看每个逻辑 Agent 的工作
 ---
 
 
-### 18.3 state.json 生成方式
+### 18.4 state.json 生成方式
 
 Dashboard 页面不得直接扫描运行目录。必须由只读 Collector 先汇总为单一快照文件，再由页面读取。
 
@@ -955,10 +1034,22 @@ Collector 输入来源：
 | `recent_events` | `events/*.jsonl` 最近 10 条 |
 | `checkpoints` | `checkpoints/*.json` 或 checkpoint metadata |
 | `flow_timeline` | 任务阶段映射，必要时由 Collector 推断 |
+| `summary.metrics` | Collector 从 `summary` 推导，或由业务层提供覆盖 |
+| `entity_grid` | `entity_grid.json`，或由 Collector 从任务/分片推断 |
+| `display_dictionary` | `display_dictionary.json` 或 Collector 默认字典 |
+| `event_display_rules` | `event_display_rules.json` 或 Collector 默认规则 |
+| `domain_extensions` | `domain_extensions.json` |
 
 Collector 只读读取输入目录，只允许写 `dashboard/state.json`。不得修改队列、事件、锁、报告、checkpoint 或任务状态。
 
-### 18.4 看板交互要求
+Collector 生成建议：
+
+- 若没有业务自定义指标，自动从 `summary` 推导 `summary.metrics`。
+- 若没有 `entity_grid.json`，可从任务分组或批次信息推断出一个最小实体矩阵。
+- 若没有 `display_dictionary.json` 或 `event_display_rules.json`，应使用协议内置默认值。
+- Collector 生成的所有扩展字段都必须保持只读语义，不能反向驱动任务状态。
+
+### 18.5 看板交互要求
 
 静态页面至少提供：
 
@@ -969,6 +1060,10 @@ Collector 只读读取输入目录，只允许写 `dashboard/state.json`。不�
 - 最近 10 个事件滚动区域。
 - Checkpoint 摘要区域，展示是否可恢复和恢复证据。
 - 横向流程泳道或甘特风格视图，展示规划、执行、验证、监控、调度的流转关系。
+- 指标卡区域，优先显示 `summary.metrics`，没有时再回退到基础统计。
+- Agent 卡片优先显示 `current_work`、`detail` 和 `last_observed`。
+- 当存在 `entity_grid` 时，展示通用实体矩阵，而不是假设某个固定业务表头。
+- 当存在 `display_dictionary` 或 `event_display_rules` 时，优先使用它们增强展示可读性。
 
 页面只能读取 `state.json`，不能发起调度、取消、重试、抢锁或自动修复。
 
