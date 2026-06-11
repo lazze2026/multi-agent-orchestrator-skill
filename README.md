@@ -11,6 +11,16 @@ A practical Skill for coordinating logical multi-agent work inside one AI coding
 
 ![Dashboard preview](docs/images/dashboard-preview.svg)
 
+## Release Highlights
+
+### v1.3.0
+
+- Added a richer dashboard schema with `summary.metrics`, `entity_grid`, `display_dictionary`, `event_display_rules`, and `domain_extensions`
+- Upgraded Agent cards to show `current_work`, `detail`, and `last_observed`
+- Improved the static dashboard demo to render premium KPI cards, a generic entity matrix, better Chinese labels, and friendlier event names
+- Extended the collector and validator so `state.json` can stay small for minimal cases but scale up for richer boards
+- Kept the core protocol unchanged in spirit: dashboard stays read-only, business-specific fields stay outside the orchestration core
+
 ## Why This Exists
 
 Long AI-agent tasks often become messy:
@@ -80,6 +90,15 @@ In `v1.3.0`, the dashboard schema can also expose:
 - `entity_grid` for generic batch/module/shard matrix views
 - `display_dictionary` and `event_display_rules` for better localized rendering
 - `domain_extensions` for business-specific display additions without polluting the core protocol
+
+The bundled static demo now shows:
+
+- KPI cards across the top header
+- Task groups split by completion state
+- Agent cards with readable work summaries instead of raw task IDs only
+- A horizontal gantt-like flow timeline
+- A generic entity matrix suitable for tasks, batches, shards, or modules
+- Recent events with display-layer labels
 
 ## Generate Dashboard State
 
@@ -204,6 +223,11 @@ multi-agent-orchestrator-skill/
 - [Install for Codex, ClaudeCode, and OpenClaw](docs/install-codex-claudecode-openclaw.md)
 - [Dashboard simulation](tests/simulations/dashboard-static-html/)
 - [API rate limit simulation](tests/simulations/api-rate-limit-partial-completion/)
+
+## Release Notes
+
+- `v1.0.0`: initial public release
+- `v1.3.0`: dashboard schema and demo upgrade, richer display layer, collector and validator enhancements
 
 ## Community
 
