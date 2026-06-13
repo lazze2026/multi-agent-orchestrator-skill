@@ -62,7 +62,8 @@ class LoopSimulatorTests(unittest.TestCase):
         self.assertIn('"status": "queued"', original_queue)
         self.assertFalse((self.workspace / "events" / "loop-events.jsonl").exists())
         self.assertFalse(result["copied_dashboard"])
-        self.assertFalse(result["copied_loop_checkpoints"])
+        self.assertTrue(result["copied_loop_checkpoints"])
+        self.assertTrue(result["removed_loop_checkpoints"])
 
 
 if __name__ == "__main__":

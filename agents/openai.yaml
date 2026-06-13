@@ -1,4 +1,117 @@
+schema_version: "1.0"
+
 interface:
   display_name: "Multi-Agent Orchestrator"
-  short_description: "Coordinate logical agents inside one AI tool"
-  default_prompt: "Use $multi-agent-orchestrator to break this long task into logical agents with checkpoints and verification."
+  short_description: "Coordinate logical agents inside one AI tool with Task Specs, checkpoints, verification, dashboard snapshots, and workspace Loop v1."
+  default_prompt: "Use $multi-agent-orchestrator to break this long task into Task Spec, Worker Briefs, event log, checkpoint, verifier report, dashboard state, and optional workspace Loop."
+
+scope:
+  execution_model: "single-tool-logical-agents"
+  supported_roles:
+    - Coordinator
+    - Worker
+    - Verifier
+    - Monitor
+    - Dashboard
+    - Loop
+  not_supported:
+    - cross-tool orchestration
+    - autonomous business deliverable writes
+    - lock preemption without explicit authorization
+
+inputs:
+  required:
+    - user_request
+    - task_spec_or_authorization_boundary
+  optional:
+    - workspace_path
+    - allowed_paths
+    - forbidden_actions
+    - dashboard_refresh_interval_seconds
+    - loop_config_path
+    - existing_queue_path
+    - existing_event_log_path
+
+outputs:
+  required:
+    - task_spec
+    - worker_briefs
+    - event_log
+    - checkpoint
+    - verification_report
+    - user_status_summary
+  optional:
+    - dashboard_state_json
+    - queue_rebuild_report
+    - loop_state_json
+    - loop_events_jsonl
+    - simulation_json
+
+permissions:
+  read:
+    allowed_by_default:
+      - orchestrator workspace metadata
+      - queue files
+      - event logs
+      - checkpoints
+      - reports
+      - locks
+      - dashboard assets
+  write:
+    requires_task_spec: true
+    allowed_metadata_writes:
+      - queue snapshots
+      - loop events
+      - loop state
+      - loop checkpoints
+      - dashboard state
+      - rebuild reports
+    forbidden_by_default:
+      - business deliverable writes
+      - database writes
+      - external API writes
+      - permission changes
+      - lock release
+      - destructive cleanup
+
+tools:
+  preferred:
+    - scripts/generate_dashboard_state.py
+    - scripts/validate_state.py
+    - scripts/loop_runner.py
+    - scripts/simulate_loop.py
+  constraints:
+    - "Use --dry-run before enabling Loop automation."
+    - "Use --once for heartbeat-compatible Loop execution."
+    - "Validate generated dashboard state with scripts/validate_state.py."
+    - "Do not mutate business deliverables from dashboard or Loop tools."
+
+loop:
+  supported: true
+  default_interval_seconds: 300
+  safe_actions:
+    - read_only_checks
+    - status_update_to_running
+    - status_update_to_verifying
+    - report_generation
+    - verifier_trigger
+  guardrails:
+    - "Auto-advance requires loop_autorun=true."
+    - "Risk must be low or minimal."
+    - "Dependencies and locks must be satisfied."
+    - "Verifier trigger requires plan and artifacts."
+    - "Expired locks may be detected and release may be requested, but are not automatically released."
+
+schemas:
+  dashboard_state_version: "1.4.0"
+  queue_snapshot_schema_version: "1.0.0"
+  event_log_format: "jsonl"
+  checkpoint_format: "markdown-or-json"
+
+references:
+  protocol: "references/protocol.md"
+  loop_design: "references/loop-v1-design.md"
+  loop_design_zh_cn: "references/loop-v1-design.zh-CN.md"
+  task_spec_template: "references/templates/task-spec.md"
+  worker_brief_template: "references/templates/worker-brief.md"
+  verification_report_template: "references/templates/verification-report.md"
