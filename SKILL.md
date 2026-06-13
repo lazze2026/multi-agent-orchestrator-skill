@@ -19,6 +19,7 @@ Use for:
 - Multi-step work with dependencies, locks, partial completion, or cancellation risk.
 - Work where one role should implement and another role should verify.
 - Work where a read-only dashboard should periodically show agent and task status.
+- Work where a workspace-level timed Loop should periodically observe state, rebuild queue snapshots, refresh the dashboard, and cautiously auto-advance explicit low-risk tasks.
 
 Do not use for:
 - Simple one-step tasks under about 10 minutes.
@@ -39,6 +40,7 @@ Before executing, decide and record:
 | Verification | Risk level and verification strategy |
 | Recovery | Checkpoint path and resume rule |
 | Dashboard | Whether to generate a read-only dashboard snapshot and refresh every 3 minutes |
+| Loop | Whether to enable workspace Loop, dry-run first, and which safe actions are allowed |
 
 If these answers are missing, create a draft Task Spec instead of executing.
 
@@ -54,9 +56,10 @@ If these answers are missing, create a draft Task Spec instead of executing.
 8. Run Verifier from the task spec and deliverables, not from the Worker's self-assessment.
 9. Write a checkpoint after every Worker, verification result, failure, cancellation, or pause.
 10. Generate dashboard state through the read-only Collector when requested; default refresh interval is 3 minutes.
-11. Report status with changed files, open risks, next owner, required verification, and suggested action.
+11. If workspace Loop is enabled, run `scripts/loop_runner.py <workspace> --dry-run` before `--once`.
+12. Report status with changed files, open risks, next owner, required verification, and suggested action.
 
-For the full protocol, templates, dashboard state schema, Collector rules, state machine, lock rules, event schema, checkpoint schema, cancellation rules, and examples, read `references/protocol.md`.
+For the full protocol, templates, dashboard state schema, Collector rules, state machine, lock rules, event schema, checkpoint schema, cancellation rules, Loop design, and examples, read `references/protocol.md` and `references/loop-v1-design.md`.
 
 ## Safety Rules
 
@@ -68,6 +71,8 @@ For the full protocol, templates, dashboard state schema, Collector rules, state
 - Cancellation is not rollback. Any deletion, overwrite, or database rollback is a new write operation requiring authorization.
 - Monitor may warn, suggest, and request decisions; it must not autonomously repair or mark work done.
 - Dashboard is read-only. It may refresh views and snapshots, but must not mutate queue, events, locks, reports, checkpoints, or task status.
+- Loop auto-advance requires explicit `loop_autorun`, low/minimal risk, satisfied dependencies, available locks, and precise `loop_safe_actions`.
+- Loop may request lock release, but must not treat a release request as approval.
 
 ## Minimum Outputs
 
@@ -80,6 +85,7 @@ For coordinated work, produce or update:
 - Verification Report.
 - User-facing status summary.
 - Optional dashboard state, static dashboard page, and Collector-generated `state.json` when dashboard mode is requested.
+- Optional Loop state, Loop events, queue rebuild report, and simulation output when workspace Loop mode is requested.
 
 If the user asks to implement the skill itself, deliver a skill folder with `SKILL.md`, `agents/openai.yaml`, and `references/protocol.md`.
 

@@ -114,3 +114,38 @@ Tool-specific notes:
 - `Codex`: best fit when you want the static HTML board visible in the in-app browser while coding continues in the same thread
 - `ClaudeCode`: best fit when you want the Skill to act as a disciplined orchestration protocol with explicit specs, briefs, and checkpoints
 - `OpenClaw`: best fit when you want the shared protocol and demo assets available from the same local Skill checkout
+
+## Workspace Loop v1
+
+The shared installation also includes the workspace-level timed Loop runner. Use it when an orchestrator workspace should be checked periodically instead of relying on one manual dashboard refresh.
+
+Preview the next Loop action without writing files:
+
+```bash
+python scripts/loop_runner.py ./workspace --dry-run
+```
+
+Run one bounded Loop cycle:
+
+```bash
+python scripts/loop_runner.py ./workspace --once
+```
+
+Simulate future cycles:
+
+```bash
+python scripts/simulate_loop.py ./workspace --cycles 10 --output simulation.json
+```
+
+Recommended heartbeat setup:
+
+- `Codex`: create a workspace heartbeat that invokes `python scripts/loop_runner.py <workspace> --once` every 5 minutes.
+- `ClaudeCode`: use the same command from a scheduled shell task or manual cycle; keep dry-run as the first check before enabling automation.
+- `OpenClaw`: point the scheduled job at the shared Skill checkout and the target orchestrator workspace.
+
+Loop safety defaults:
+
+- Business deliverables are not modified.
+- Queue and dashboard are derived from events.
+- Full rebuild validation runs every 12 cycles by default.
+- Expired locks are detected, but not automatically released.

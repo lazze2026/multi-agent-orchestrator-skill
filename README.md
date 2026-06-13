@@ -44,6 +44,7 @@ This Skill gives those workflows a small operating protocol: plan first, execute
 - **Monitor warnings**: lock conflicts, stale agents, queue pressure, rate limits, fallback decisions.
 - **Read-only dashboard**: Agent state, task breakdown, blockers, timeline, checkpoints, dispatch actions, recent events.
 - **v1.3.0 dashboard schema**: top metrics, richer Agent cards, entity grid, display dictionary, event label rules, optional domain extensions.
+- **Workspace Loop v1**: one-cycle heartbeat runner, dry-run mode, incremental queue rebuild, scheduled full rebuild validation, and loop dashboard fields.
 
 ## Quick Start
 
@@ -133,6 +134,36 @@ python scripts/validate_state.py ./workspace/dashboard/state.json
 
 The validator understands the optional `v1.3.0` dashboard fields and still accepts the smaller minimal schema.
 
+## Workspace Loop v1
+
+Loop v1 turns the orchestrator workspace into a timed, auditable cycle. It observes state, appends Loop events, rebuilds queue snapshots, refreshes the dashboard, and only auto-advances explicitly allowed low-risk tasks.
+
+Run a policy preview without writing files:
+
+```bash
+python scripts/loop_runner.py ./workspace --dry-run
+```
+
+Run one bounded cycle:
+
+```bash
+python scripts/loop_runner.py ./workspace --once
+```
+
+Simulate the next 10 cycles without mutating the source workspace:
+
+```bash
+python scripts/simulate_loop.py ./workspace --cycles 10 --output simulation.json
+```
+
+Loop v1 guardrails:
+
+- `status_update_to_running` and `status_update_to_verifying` are separate safe actions.
+- `verifier_trigger` requires a verification plan, artifacts, valid scope, and no duplicate verifier run.
+- Incremental queue rebuild is the default; a full rebuild check runs every 12 cycles by default.
+- Expired locks can be detected and release can be requested, but locks are not automatically released by default.
+- Business deliverables are never modified by the Loop runner.
+
 Linux/Mac wrapper:
 
 ```bash
@@ -220,6 +251,8 @@ multi-agent-orchestrator-skill/
 
 - [Skill entry point](SKILL.md)
 - [Full protocol](references/protocol.md)
+- [Workspace Loop v1 design](references/loop-v1-design.md)
+- [Workspace Loop v1 design, zh-CN](references/loop-v1-design.zh-CN.md)
 - [Install for Codex, ClaudeCode, and OpenClaw](docs/install-codex-claudecode-openclaw.md)
 - [Dashboard simulation](tests/simulations/dashboard-static-html/)
 - [API rate limit simulation](tests/simulations/api-rate-limit-partial-completion/)
@@ -228,6 +261,7 @@ multi-agent-orchestrator-skill/
 
 - `v1.0.0`: initial public release
 - `v1.3.0`: dashboard schema and demo upgrade, richer display layer, collector and validator enhancements
+- `main`: workspace Loop v1 runner, dry-run, simulator, queue rebuild report, and dashboard Loop fields
 
 ## Community
 
