@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -72,21 +72,36 @@ DEFAULT_EVENT_DISPLAY_RULES = [
 ]
 
 
-def parse_time(value: Any) -> str:
-    """Normalize common timestamp strings to an ISO-8601-like format."""
+def ensure_aware_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def parse_datetime(value: Any) -> datetime | None:
     if value is None:
-        return ""
+        return None
     if isinstance(value, datetime):
-        return value.astimezone().replace(microsecond=0).isoformat()
+        return ensure_aware_utc(value).replace(microsecond=0)
     if not isinstance(value, str):
-        return ""
+        return None
     text = value.strip()
     if not text:
-        return ""
+        return None
     if " " in text and "T" not in text:
         text = text.replace(" ", "T", 1)
     text = text.replace("T+", "+")
-    return text
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    return ensure_aware_utc(parsed).replace(microsecond=0)
+
+
+def parse_time(value: Any) -> str:
+    """Normalize common timestamp strings to UTC ISO 8601."""
+    parsed = parse_datetime(value)
+    return parsed.isoformat() if parsed else ""
 
 
 def read_json(path: Path, default: Any) -> Any:
@@ -253,11 +268,10 @@ def summarize(
 def format_age(from_iso: str, now: datetime) -> str:
     if not from_iso:
         return "未知"
-    try:
-        dt = datetime.fromisoformat(from_iso)
-    except ValueError:
+    dt = parse_datetime(from_iso)
+    if not dt:
         return "未知"
-    seconds = max(0, int((now - dt).total_seconds()))
+    seconds = max(0, int((ensure_aware_utc(now) - dt).total_seconds()))
     if seconds < 60:
         return f"{seconds}s"
     minutes, rem = divmod(seconds, 60)
@@ -323,7 +337,11 @@ def first_task(group: dict[str, Any]) -> dict[str, Any]:
 
 
 def infer_timeline(task_groups: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Infer a gantt-style timeline from actual task groups."""
+    """Infer a placeholder gantt-style timeline from actual task groups.
+
+    Status values come from task groups. The start/span values are display
+    placeholders until event-time inference is available.
+    """
     by_name = {str(group.get("name")): group for group in task_groups}
 
     def item(
@@ -459,7 +477,7 @@ def generate_state(workspace: Path, refresh_interval: int) -> dict[str, Any]:
     if not isinstance(event_display_rules, list):
         event_display_rules = DEFAULT_EVENT_DISPLAY_RULES
 
-    now = datetime.now().astimezone().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(microsecond=0)
     generated_at = parse_time(now)
     next_refresh_at = parse_time(now + timedelta(seconds=refresh_interval))
     summary = summarize(queue_tasks, agents, blockers, actions)
@@ -467,7 +485,7 @@ def generate_state(workspace: Path, refresh_interval: int) -> dict[str, Any]:
     policy = build_policy(orchestrator)
 
     state = {
-        "schema_version": "1.3.0",
+        "schema_version": "1.4.0",
         "generated_at": generated_at,
         "refresh_interval_seconds": refresh_interval,
         "read_only": True,

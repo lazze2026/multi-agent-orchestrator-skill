@@ -29,8 +29,12 @@ def simulate(workspace: Path | str, cycles: int, output: Path | str | None = Non
     runner = load_runner()
     with tempfile.TemporaryDirectory() as tmpdir:
         simulated_workspace = Path(tmpdir) / "workspace"
-        ignore = shutil.ignore_patterns("dashboard", "loop/checkpoints")
-        shutil.copytree(workspace, simulated_workspace, ignore=ignore)
+        shutil.copytree(workspace, simulated_workspace, ignore=shutil.ignore_patterns("dashboard"))
+        old_checkpoints = simulated_workspace / "loop" / "checkpoints"
+        if old_checkpoints.exists():
+            shutil.rmtree(old_checkpoints)
+        copied_dashboard = (simulated_workspace / "dashboard").exists()
+        copied_loop_checkpoints = old_checkpoints.exists()
         now = runner.utc_now()
         results = []
         for _ in range(cycles):
@@ -49,6 +53,8 @@ def simulate(workspace: Path | str, cycles: int, output: Path | str | None = Non
             "cycles_requested": cycles,
             "cycles": results,
             "mutates_source_workspace": False,
+            "copied_dashboard": copied_dashboard,
+            "copied_loop_checkpoints": copied_loop_checkpoints,
         }
     if output:
         output_path = Path(output)

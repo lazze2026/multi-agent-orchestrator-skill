@@ -9,6 +9,7 @@ Coordinate logical multi-agent work inside one AI coding tool with Task Specs, W
 [![Skill](https://img.shields.io/badge/AI%20Skill-Codex%20%7C%20ClaudeCode%20%7C%20OpenClaw-7047c6.svg)](SKILL.md)
 [![Loop](https://img.shields.io/badge/workspace-loop%20v1-2356d6.svg)](references/loop-v1-design.md)
 [![Dashboard](https://img.shields.io/badge/dashboard-static%20HTML-087443.svg)](tests/simulations/dashboard-static-html/)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions%20%7C%20GitLab%20CI-087443.svg)](.github/workflows/tests.yml)
 
 ![Loop dashboard preview](docs/images/dashboard-preview.svg)
 
@@ -78,6 +79,12 @@ Clone into a shared skills directory:
 
 ```bash
 git clone https://github.com/lazze2026/multi-agent-orchestrator-skill.git ~/.shared-skills/multi-agent-orchestrator
+```
+
+GitLab mirror:
+
+```bash
+git clone https://gitlab.com/chenkimi679-group/chenkimi679-project.git ~/.shared-skills/multi-agent-orchestrator
 ```
 
 Link or copy it into your tool's skills folder:
@@ -150,6 +157,19 @@ Current dashboard capabilities:
 - friendlier event names through `event_display_rules`
 - optional business-specific display additions through `domain_extensions`
 - Loop section with cycle summary, health, and recent Loop events
+
+Note: the bundled timeline inference currently uses real task-group status with placeholder `start` and `span` values. Event-time-based timeline inference is planned as a future enhancement.
+
+## CI
+
+Both hosted copies run the same standard-library test suite:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+- GitHub Actions: `.github/workflows/tests.yml`
+- GitLab CI: `.gitlab-ci.yml`
 
 ## Generate Dashboard State
 

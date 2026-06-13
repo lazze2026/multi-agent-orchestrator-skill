@@ -27,6 +27,10 @@ class LoopSimulatorTests(unittest.TestCase):
         (self.workspace / "queue").mkdir(parents=True)
         (self.workspace / "events").mkdir()
         (self.workspace / "loop").mkdir()
+        (self.workspace / "loop" / "checkpoints").mkdir()
+        (self.workspace / "loop" / "checkpoints" / "old.json").write_text("{}", encoding="utf-8")
+        (self.workspace / "dashboard").mkdir()
+        (self.workspace / "dashboard" / "state.json").write_text("{}", encoding="utf-8")
         (self.workspace / "queue" / "tasks.jsonl").write_text(
             json.dumps(
                 {
@@ -57,6 +61,8 @@ class LoopSimulatorTests(unittest.TestCase):
         original_queue = (self.workspace / "queue" / "tasks.jsonl").read_text(encoding="utf-8")
         self.assertIn('"status": "queued"', original_queue)
         self.assertFalse((self.workspace / "events" / "loop-events.jsonl").exists())
+        self.assertFalse(result["copied_dashboard"])
+        self.assertFalse(result["copied_loop_checkpoints"])
 
 
 if __name__ == "__main__":

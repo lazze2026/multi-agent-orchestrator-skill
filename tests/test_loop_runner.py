@@ -87,6 +87,7 @@ class LoopRunnerTests(unittest.TestCase):
         result = self.runner.run_cycle(self.workspace, dry_run=False, now=self.now)
 
         self.assertEqual(result["loop_status"], "running")
+        self.assertGreaterEqual(result["last_cycle_summary"]["duration_ms"], 0)
         queue_rows = self.read_jsonl("queue/tasks.jsonl")
         self.assertEqual(queue_rows[0]["status"], "running")
         events = self.read_jsonl("events/loop-events.jsonl")
@@ -97,6 +98,7 @@ class LoopRunnerTests(unittest.TestCase):
         loop_state = self.read_json("loop/loop_state.json")
         self.assertEqual(loop_state["iteration"], 1)
         dashboard = self.read_json("dashboard/state.json")
+        self.assertEqual(dashboard["schema_version"], "1.4.0")
         self.assertEqual(dashboard["loop"]["last_cycle_summary"]["auto_advanced"], 1)
         self.assertTrue(dashboard["loop"]["health"]["queue_rebuild_ok"])
 
@@ -125,6 +127,8 @@ class LoopRunnerTests(unittest.TestCase):
         self.assertTrue(result["last_cycle_summary"]["full_rebuild_check"])
         report = self.read_json("loop/rebuild/queue-rebuild-report.json")
         self.assertEqual(report["validation_mode"], "full")
+        snapshot = self.read_json("loop/rebuild/queue.snapshot.state.json")
+        self.assertEqual(snapshot["queue_snapshot_schema_version"], "1.0.0")
 
     def test_detects_stale_running_task_from_missing_heartbeat(self) -> None:
         self.write_queue({"task_id": "task_001", "status": "running", "owner": "Worker-1"})
@@ -148,6 +152,32 @@ class LoopRunnerTests(unittest.TestCase):
         self.assertEqual(result["last_cycle_summary"]["stale_detected"], 1)
         events = self.read_jsonl("events/loop-events.jsonl")
         self.assertIn("loop.stale.detected", [event["event"] for event in events])
+
+    def test_naive_timestamps_are_interpreted_in_configured_timezone(self) -> None:
+        self.write_queue({"task_id": "task_001", "status": "running", "owner": "Worker-1"})
+        (self.workspace / "loop" / "loop_config.json").write_text(
+            json.dumps({"timezone": "-08:00", "stale_detection": {"after_minutes": 30}}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        (self.workspace / "events" / "task_001.jsonl").write_text(
+            json.dumps(
+                {
+                    "event_id": "evt_001",
+                    "time": "2026-06-13 01:40:00",
+                    "task_id": "task_001",
+                    "agent": "Worker-1",
+                    "event": "worker.heartbeat",
+                },
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        now = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
+
+        result = self.runner.run_cycle(self.workspace, dry_run=True, now=now)
+
+        self.assertEqual(result["last_cycle_summary"]["stale_detected"], 0)
 
     def test_status_update_to_verifying_requires_safe_action(self) -> None:
         self.write_queue(

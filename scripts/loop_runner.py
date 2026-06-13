@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -68,14 +69,39 @@ DEFAULT_CONFIG: dict[str, Any] = {
 
 
 def utc_now() -> datetime:
-    return datetime.now().astimezone().replace(microsecond=0)
+    return datetime.now(timezone.utc).replace(microsecond=0)
 
 
 def iso(dt: datetime) -> str:
-    return dt.astimezone().replace(microsecond=0).isoformat()
+    return ensure_aware_utc(dt).replace(microsecond=0).isoformat()
 
 
-def parse_time(value: Any) -> datetime | None:
+def parse_timezone(value: Any) -> timezone:
+    if not isinstance(value, str) or value.upper() == "UTC":
+        return timezone.utc
+    text = value.strip()
+    if text in {"Z", "+00:00", "-00:00"}:
+        return timezone.utc
+    sign = 1
+    if text.startswith("-"):
+        sign = -1
+        text = text[1:]
+    elif text.startswith("+"):
+        text = text[1:]
+    try:
+        hours, minutes = text.split(":", 1)
+        return timezone(sign * timedelta(hours=int(hours), minutes=int(minutes)))
+    except (ValueError, TypeError):
+        return timezone.utc
+
+
+def ensure_aware_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+def parse_time(value: Any, default_tz: timezone = timezone.utc) -> datetime | None:
     if not isinstance(value, str) or not value.strip():
         return None
     text = value.strip()
@@ -86,8 +112,8 @@ def parse_time(value: Any) -> datetime | None:
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=timezone.utc)
-    return parsed
+        parsed = parsed.replace(tzinfo=default_tz)
+    return parsed.astimezone(timezone.utc)
 
 
 def read_json(path: Path, default: Any) -> Any:
@@ -318,6 +344,7 @@ def detect_stale_tasks(
     now: datetime,
 ) -> list[dict[str, Any]]:
     stale_config = config["stale_detection"]
+    default_tz = parse_timezone(config.get("timezone", "UTC"))
     excluded = set(stale_config.get("exclude_statuses", []))
     heartbeat_names = set(stale_config.get("heartbeat_event_names", []))
     events_by_task: dict[str, list[dict[str, Any]]] = {}
@@ -342,7 +369,7 @@ def detect_stale_tasks(
         for event in events_by_task.get(task_id, []):
             event_name = str(event.get("event", ""))
             if event_name.startswith("worker.") or event_name in heartbeat_names:
-                parsed = parse_time(event.get("time") or event.get("timestamp") or event.get("created_at"))
+                parsed = parse_time(event.get("time") or event.get("timestamp") or event.get("created_at"), default_tz)
                 if parsed:
                     signals.append(parsed)
         last_signal = max(signals) if signals else None
@@ -446,6 +473,7 @@ def rebuild_queue(
             workspace / str(queue_config.get("snapshot_path", "loop/rebuild/queue.snapshot.state.json")),
             {
                 "schema_version": "1.0.0",
+                "queue_snapshot_schema_version": "1.0.0",
                 "workspace": str(workspace.resolve()),
                 "last_rebuild_event_time": iso(now),
                 "task_count": len(tasks),
@@ -469,7 +497,7 @@ def dashboard_state(
     running = sum(task.get("status") in {"running", "verifying"} for task in tasks)
     next_run = now + timedelta(seconds=int(config.get("interval_seconds", 300)))
     return {
-        "schema_version": "1.4.0-loop-v1",
+        "schema_version": "1.4.0",
         "generated_at": iso(now),
         "refresh_interval_seconds": int(config.get("interval_seconds", 300)),
         "read_only": True,
@@ -504,8 +532,9 @@ def dashboard_state(
 
 
 def run_cycle(workspace: Path | str, dry_run: bool = False, now: datetime | None = None) -> dict[str, Any]:
+    started = time.perf_counter()
     workspace = Path(workspace).resolve()
-    now = now or utc_now()
+    now = ensure_aware_utc(now or utc_now())
     config = load_config(workspace)
     previous_state = read_json(workspace / "loop" / "loop_state.json", {})
     iteration = int(previous_state.get("iteration", 0)) + 1
@@ -527,7 +556,7 @@ def run_cycle(workspace: Path | str, dry_run: bool = False, now: datetime | None
         "blocked_detected": sum(task.get("status") in {"blocked", "needs_human_decision"} for task in advanced_tasks),
         "auto_advanced": len(auto_events),
         "rebuild_warnings": len(rebuild_report["warnings"]),
-        "duration_ms": 0,
+        "duration_ms": max(0, int((time.perf_counter() - started) * 1000)),
         "full_rebuild_check": rebuild_report["full_rebuild_check"],
     }
     health = {

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 REQUIRED_FIELDS = ["generated_at", "project", "summary", "task_groups"]
+SUPPORTED_SCHEMA_VERSIONS = {"1.3.0", "1.4.0"}
 LIST_FIELDS = [
     "task_groups",
     "agents",
@@ -18,7 +19,7 @@ LIST_FIELDS = [
     "checkpoints",
     "event_display_rules",
 ]
-OPTIONAL_OBJECT_FIELDS = ["freshness", "policy", "entity_grid", "display_dictionary", "domain_extensions"]
+OPTIONAL_OBJECT_FIELDS = ["freshness", "policy", "entity_grid", "display_dictionary", "domain_extensions", "loop"]
 
 
 def validate_metric(metric: dict[str, Any], index: int) -> list[str]:
@@ -44,6 +45,44 @@ def validate_entity_grid(entity_grid: dict[str, Any]) -> list[str]:
     return errors
 
 
+def validate_loop(loop: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if "status" in loop and not isinstance(loop["status"], str):
+        errors.append("loop.status must be a string")
+    if "iteration" not in loop:
+        errors.append("loop.iteration is required")
+    elif not isinstance(loop["iteration"], int):
+        errors.append("loop.iteration must be an integer")
+
+    summary = loop.get("last_cycle_summary")
+    if summary is not None:
+        if not isinstance(summary, dict):
+            errors.append("loop.last_cycle_summary must be an object")
+        else:
+            for field in ["stale_detected", "blocked_detected", "auto_advanced", "rebuild_warnings", "duration_ms"]:
+                if field in summary and not isinstance(summary[field], int):
+                    errors.append(f"loop.last_cycle_summary.{field} must be an integer")
+
+    health = loop.get("health")
+    if health is not None:
+        if not isinstance(health, dict):
+            errors.append("loop.health must be an object")
+        else:
+            if "consecutive_failures" in health and not isinstance(health["consecutive_failures"], int):
+                errors.append("loop.health.consecutive_failures must be an integer")
+            if "last_failure_reason" in health and not isinstance(health["last_failure_reason"], str):
+                errors.append("loop.health.last_failure_reason must be a string")
+            if "queue_rebuild_ok" in health and not isinstance(health["queue_rebuild_ok"], bool):
+                errors.append("loop.health.queue_rebuild_ok must be a boolean")
+            if "events_processed" in health and not isinstance(health["events_processed"], int):
+                errors.append("loop.health.events_processed must be an integer")
+
+    recent = loop.get("recent_loop_events")
+    if recent is not None and not isinstance(recent, list):
+        errors.append("loop.recent_loop_events must be a list")
+    return errors
+
+
 def validate_state(state: dict[str, Any]) -> list[str]:
     """Validate state.json against the dashboard schema."""
     errors: list[str] = []
@@ -54,8 +93,11 @@ def validate_state(state: dict[str, Any]) -> list[str]:
         errors.append("Field read_only must be true")
     if "refresh_interval_seconds" in state and not isinstance(state["refresh_interval_seconds"], int):
         errors.append("Field refresh_interval_seconds must be an integer")
-    if "schema_version" in state and not isinstance(state["schema_version"], str):
-        errors.append("Field schema_version must be a string")
+    if "schema_version" in state:
+        if not isinstance(state["schema_version"], str):
+            errors.append("Field schema_version must be a string")
+        elif state["schema_version"] not in SUPPORTED_SCHEMA_VERSIONS:
+            errors.append(f"Unsupported schema_version: {state['schema_version']}")
     for field in LIST_FIELDS:
         if field in state and not isinstance(state[field], list):
             errors.append(f"Field {field} must be a list")
@@ -81,6 +123,10 @@ def validate_state(state: dict[str, Any]) -> list[str]:
     entity_grid = state.get("entity_grid")
     if isinstance(entity_grid, dict):
         errors.extend(validate_entity_grid(entity_grid))
+
+    loop = state.get("loop")
+    if isinstance(loop, dict):
+        errors.extend(validate_loop(loop))
 
     display_dictionary = state.get("display_dictionary")
     if isinstance(display_dictionary, dict):
